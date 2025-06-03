@@ -1,0 +1,22 @@
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+# Carregar os dados
+dados = pd.read_csv("datatran2024_FonteDEDados.csv", sep=";", encoding="latin1")
+dados['acidente_fatal'] = (dados['mortos'] > 0).astype(int)
+
+# Agrupar por estado
+resumo = dados.groupby('uf').agg({
+    'id': 'count',
+    'acidente_fatal': 'sum',
+    'veiculos': 'sum'
+}).reset_index().rename(columns={'id': 'total_acidentes'})
+resumo['taxa_fatalidade'] = resumo['acidente_fatal'] / resumo['total_acidentes']
+
+# Criar gráfico interativo
+fig = px.bar(resumo, x='uf', y='taxa_fatalidade', title='Taxa de Acidentes Fatais por Estado')
+
+# Interface Streamlit
+st.title("Dashboard Interativo - Acidentes de Trânsito 2024")
+st.plotly_chart(fig)
